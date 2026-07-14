@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="assets/css/site.css">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
 </head>
-<body>
+<body class="journey">
 
 <header class="nav">
   <div class="wrap nav-inner">
@@ -37,13 +37,16 @@
   </div>
 </header>
 
+<!-- One persistent scene behind the entire page. Scroll drives the camera
+     along the path; the sections below are stops on that journey. -->
+<div class="journey-bg"><canvas id="journeyCanvas" aria-hidden="true"></canvas></div>
+
 <main>
 
-  <!-- HERO · the path ahead -->
-  <section class="hero" aria-label="Introduction">
-    <div class="scene"><canvas id="heroCanvas" aria-hidden="true"></canvas></div>
-    <div class="hero-content">
-      <div class="wrap">
+  <!-- STOP 1 · HERO · the path ahead (copy left, track right) -->
+  <section class="stop" aria-label="Introduction">
+    <div class="wrap">
+      <div class="stop-inner">
         <p class="eyebrow">Strategic path forward</p>
         <h1>Most AI strategy never ships.</h1>
         <p class="lead">Stravio builds the operational path so it does. AI strategy and implementation for midsize teams that want the numbers to move, not another deck.</p>
@@ -61,10 +64,10 @@
     <div class="scroll-hint">Scroll</div>
   </section>
 
-  <!-- PROBLEM -->
-  <section class="band" id="problem">
+  <!-- STOP 2 · PROBLEM (copy right, track left) -->
+  <section class="stop" id="problem">
     <div class="wrap">
-      <div class="panel steel">
+      <div class="stop-inner right">
         <p class="eyebrow" data-reveal>The problem</p>
         <h2 data-reveal>A month in, most teams have nothing to show.</h2>
         <div class="measure" style="margin-top:24px">
@@ -75,85 +78,97 @@
     </div>
   </section>
 
-  <!-- WHAT WE DO -->
-  <section class="band" id="what">
+  <!-- STOP 3 · WHAT WE DO (copy left, track right) -->
+  <section class="stop" id="what">
     <div class="wrap">
-      <p class="eyebrow" data-reveal>What we do</p>
-      <h2 data-reveal style="max-width:22ch">From diagnosis to independence.</h2>
-      <div class="card-grid" style="margin-top:44px">
-        <a class="card" href="services.html#diagnostic" data-reveal>
-          <span class="card-arw">&rarr;</span>
-          <div class="wm-line"></div>
-          <p class="kicker-num">01</p>
-          <h3 style="margin-top:8px">Diagnostic</h3>
-          <p>Four to six weeks inside your operation. We map how the work actually gets done, find where AI genuinely fits, and hand you a defensible adoption plan.</p>
-        </a>
-        <a class="card" href="services.html#outcomes" data-reveal>
-          <span class="card-arw">&rarr;</span>
-          <div class="wm-line"></div>
-          <p class="kicker-num">02</p>
-          <h3 style="margin-top:8px">Outcomes</h3>
-          <p>We build the systems the plan calls for. Working capabilities wired into your real tools, delivered as outcomes you can measure, not licenses you can forget.</p>
-        </a>
-        <a class="card" href="services.html#training" data-reveal>
-          <span class="card-arw">&rarr;</span>
-          <div class="wm-line"></div>
-          <p class="kicker-num">03</p>
-          <h3 style="margin-top:8px">Training</h3>
-          <p>Your team learns to run and extend the system themselves. Every engagement ends with you more capable than we found you. That is the point.</p>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- STACK TEASER -->
-  <section class="band-tight" id="stack-teaser">
-    <div class="wrap">
-      <div class="panel" style="display:grid; grid-template-columns:1fr auto; gap:28px; align-items:center">
-        <div>
-          <p class="eyebrow" data-reveal>The operating model</p>
-          <h2 data-reveal style="max-width:20ch">Everything we ship runs on the Stravio Stack.</h2>
-          <p class="lead" data-reveal style="margin-top:16px; font-size:16px">Five layers, from the person who owns the system down to the AI your team actually talks to. It is how one month of work keeps compounding after we leave.</p>
-        </div>
-        <a class="btn btn-ghost" href="services.html#stack" data-reveal>Walk the Stack &rarr;</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- WHY -->
-  <section class="band" id="why">
-    <div class="wrap">
-      <p class="eyebrow" data-reveal>Why Stravio</p>
-      <h2 data-reveal>Operators, not theorists.</h2>
-      <div class="card-grid" style="margin-top:44px">
-        <div class="card" data-reveal>
-          <div class="wm-line"></div>
-          <h3>We have done the work</h3>
-          <p>Marketing for a tire shop where every dollar counted. AI strategy across a half billion dollar enterprise pipeline. Same failure modes at every level, and we have fixed them at every level.</p>
-        </div>
-        <div class="card" data-reveal>
-          <div class="wm-line"></div>
-          <h3>Plain language</h3>
-          <p>No buzzwords and no frameworks for their own sake. If we cannot explain what we are doing in one sentence, we are not doing it. Specific outcomes, numbers attached.</p>
-        </div>
-        <div class="card" data-reveal>
-          <div class="wm-line"></div>
-          <h3>Independence is the goal</h3>
-          <p>We teach your team to run the Stack without us. Vendor lock is a failure mode, not a business model. The end state is your capability, not your dependence.</p>
+      <div class="stop-inner">
+        <p class="eyebrow" data-reveal>What we do</p>
+        <h2 data-reveal style="max-width:22ch">From diagnosis to independence.</h2>
+        <div class="ledger" data-reveal>
+          <a class="ledger-row" href="services.html#diagnostic">
+            <span class="kicker-num">01</span>
+            <span>
+              <h3>Diagnostic <span class="arw">&rarr;</span></h3>
+              <p>Four to six weeks inside your operation. We map how the work actually gets done, find where AI genuinely fits, and hand you a defensible adoption plan.</p>
+            </span>
+          </a>
+          <a class="ledger-row" href="services.html#outcomes">
+            <span class="kicker-num">02</span>
+            <span>
+              <h3>Outcomes <span class="arw">&rarr;</span></h3>
+              <p>We build the systems the plan calls for. Working capabilities wired into your real tools, delivered as outcomes you can measure, not licenses you can forget.</p>
+            </span>
+          </a>
+          <a class="ledger-row" href="services.html#training">
+            <span class="kicker-num">03</span>
+            <span>
+              <h3>Training <span class="arw">&rarr;</span></h3>
+              <p>Your team learns to run and extend the system themselves. Every engagement ends with you more capable than we found you. That is the point.</p>
+            </span>
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta-band" id="cta">
+  <!-- STOP 4 · THE STACK (copy right, track left) -->
+  <section class="stop" id="stack-teaser">
     <div class="wrap">
-      <p class="eyebrow" data-reveal style="justify-content:center">Ready when you are</p>
-      <h2 data-reveal>The path is shorter than you think.</h2>
-      <p class="lead" data-reveal>One short conversation to confirm fit and scope. No prep needed.</p>
-      <div class="hero-cta" data-reveal>
-        <a class="btn btn-primary" href="contact.html"><span class="mark"></span>Start the conversation</a>
-        <a class="btn btn-ghost" href="services.html">Explore services</a>
+      <div class="stop-inner right">
+        <p class="eyebrow" data-reveal>The operating model</p>
+        <h2 data-reveal style="max-width:20ch">Everything we ship runs on the Stravio Stack.</h2>
+        <p class="lead" data-reveal style="margin-top:18px">Five layers, from the person who owns the system down to the AI your team actually talks to. It is how one month of work keeps compounding after we leave.</p>
+        <div class="hero-cta" data-reveal>
+          <a class="btn btn-ghost" href="services.html#stack">Walk the Stack &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STOP 5 · WHY STRAVIO (copy left, track right) -->
+  <section class="stop" id="why">
+    <div class="wrap">
+      <div class="stop-inner">
+        <p class="eyebrow" data-reveal>Why Stravio</p>
+        <h2 data-reveal>Operators, not theorists.</h2>
+        <div class="ledger" data-reveal>
+          <div class="ledger-row">
+            <span class="kicker-num">01</span>
+            <span>
+              <h3>We have done the work</h3>
+              <p>Marketing for a tire shop where every dollar counted. AI strategy across a half billion dollar enterprise pipeline. Same failure modes at every level, and we have fixed them at every level.</p>
+            </span>
+          </div>
+          <div class="ledger-row">
+            <span class="kicker-num">02</span>
+            <span>
+              <h3>Plain language</h3>
+              <p>No buzzwords and no frameworks for their own sake. If we cannot explain what we are doing in one sentence, we are not doing it. Specific outcomes, numbers attached.</p>
+            </span>
+          </div>
+          <div class="ledger-row">
+            <span class="kicker-num">03</span>
+            <span>
+              <h3>Independence is the goal</h3>
+              <p>We teach your team to run the Stack without us. Vendor lock is a failure mode, not a business model. The end state is your capability, not your dependence.</p>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STOP 6 · ARRIVAL · CTA (copy right, the light arrives left) -->
+  <section class="stop" id="cta">
+    <div class="wrap">
+      <div class="stop-inner right">
+        <p class="eyebrow" data-reveal>Ready when you are</p>
+        <h2 data-reveal>The path is shorter than you think.</h2>
+        <p class="lead" data-reveal>One short conversation to confirm fit and scope. No prep needed.</p>
+        <div class="hero-cta" data-reveal>
+          <a class="btn btn-primary" href="contact.html"><span class="mark"></span>Start the conversation</a>
+          <a class="btn btn-ghost" href="services.html">Explore services</a>
+        </div>
       </div>
     </div>
   </section>
@@ -186,8 +201,8 @@
 
 <script type="module">
   import './assets/js/site.js';
-  import { initHeroPath } from './assets/js/scenes.js';
-  initHeroPath(document.getElementById('heroCanvas'));
+  import { initHomeJourney } from './assets/js/scenes/home.js';
+  initHomeJourney(document.getElementById('journeyCanvas'));
 </script>
 </body>
 </html>

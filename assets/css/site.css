@@ -324,6 +324,54 @@ form.lead-form { display: flex; flex-direction: column; gap: 15px; }
 .field textarea { resize: vertical; min-height: 100px; }
 .form-note { font-size: 12.5px; color: var(--pearl-faint); }
 
+/* ============================================================
+   Journey layout (homepage) — one fixed 3D scene behind the page,
+   sections are full-height "stops" with a soft scrim for legibility.
+   No panels, no cards: type sits directly on the scene.
+   ============================================================ */
+.journey-bg { position: fixed; inset: 0; z-index: 0; }
+.journey-bg canvas { width: 100%; height: 100%; display: block; }
+body.journey main, body.journey footer.foot { position: relative; z-index: 1; }
+
+.stop { min-height: 100vh; display: flex; align-items: center; padding: 90px 0; }
+/* journey stops ignore the centered wrap width: copy pins to the true
+   screen edge so the road always owns the opposite half of the viewport */
+.stop > .wrap { width: 100%; max-width: none; padding: 0 clamp(28px, 5vw, 90px); }
+.stop-inner { max-width: min(560px, 42vw); position: relative; }
+.stop-inner .lead { margin-top: 22px; }
+.stop-inner.right { margin-left: auto; }
+.stop-inner.center { margin: 0 auto; text-align: center; max-width: 640px; }
+
+/* legibility scrim: a soft dark ellipse behind the text, never a box */
+.stop-inner::before {
+  content: ""; position: absolute; inset: -80px -110px; z-index: -1; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(9, 13, 21, .78) 0%, rgba(9, 13, 21, .4) 52%, rgba(9, 13, 21, 0) 72%);
+  pointer-events: none;
+}
+
+/* ledger rows: full-bleed numbered entries, rule-separated — not cards */
+.ledger { margin-top: 40px; }
+.ledger-row {
+  display: grid; grid-template-columns: 44px 1fr; gap: 14px;
+  border-top: 1px solid var(--line); padding: 24px 0;
+  text-decoration: none; color: var(--pearl);
+}
+.ledger-row:last-child { border-bottom: 1px solid var(--line); }
+.ledger-row h3 { display: flex; align-items: baseline; gap: 10px; }
+.ledger-row h3 .arw { color: var(--brass); font-size: 16px; transition: transform .2s ease; }
+a.ledger-row:hover h3 .arw { transform: translateX(4px); }
+a.ledger-row:hover h3 { color: var(--brass-2); }
+.ledger-row p { color: var(--pearl-dim); font-size: 14.5px; line-height: 1.65; margin-top: 8px; max-width: 52ch; }
+
+@media (max-width: 860px) {
+  .stop { padding: 70px 0; }
+  .stop-inner, .stop-inner.right { max-width: 100%; margin: 0; }
+  .stop-inner::before { inset: -50px -30px; }
+}
+@media (min-width: 861px) and (max-width: 1150px) {
+  .stop-inner { max-width: 46vw; }
+}
+
 /* ---------- CTA band ---------- */
 .cta-band { text-align: center; padding: var(--band) 0; }
 .cta-band h2 { margin: 0 auto; max-width: 20ch; }
