@@ -140,11 +140,23 @@ export function initHomeJourney(canvas) {
     emissive: 0x4a2f0e, emissiveIntensity: 1,
   });
   const every8 = (pts) => pts.filter((_, i) => i % 8 === 0);
+  const capMat = new THREE.MeshStandardMaterial({
+    color: BRAND.brass, metalness: 0.6, roughness: 0.42,
+    emissive: 0x2e1c07, emissiveIntensity: 1,
+  });
   for (const edge of [track.leftPts, track.rightPts]) {
+    const railPts = every8(edge);
     scene.add(new THREE.Mesh(
-      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(every8(edge)), 300, 0.022, 8, false),
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPts), 300, 0.022, 8, false),
       railMat
     ));
+    // cap the open tube mouths so the rail ends read solid, deck-toned so
+    // there are no bright tips — same treatment as the contact arrival
+    for (const end of [railPts[0], railPts[railPts.length - 1]]) {
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 10), capMat);
+      cap.position.copy(end);
+      scene.add(cap);
+    }
   }
 
   // center guide glow floating just above the deck
@@ -161,13 +173,13 @@ export function initHomeJourney(canvas) {
      no solid sphere (decision: the "ball" read wrong) — the promised land
      is a radiance, not an object. Full creative treatment parked in O4. */
   const dest = path.getPointAt(1);
-  const destHot = glowSprite('rgba(255,248,232,0.95)', 'rgba(247,231,196,0.5)', 1.6);
+  const destHot = glowSprite('rgba(255,248,232,0.95)', 'rgba(247,231,196,0.5)', 2.6);
   destHot.position.copy(dest);
   scene.add(destHot);
-  const destGlow = glowSprite('rgba(247,231,196,0.75)', 'rgba(201,133,58,0.3)', 5.4);
+  const destGlow = glowSprite('rgba(247,231,196,0.75)', 'rgba(201,133,58,0.3)', 8.5);
   destGlow.position.copy(dest);
   scene.add(destGlow);
-  const destLight = new THREE.PointLight(BRAND.brassBright, 30, 20, 2);
+  const destLight = new THREE.PointLight(BRAND.brassBright, 46, 24, 2);
   destLight.position.copy(dest);
   scene.add(destLight);
 
@@ -282,8 +294,8 @@ export function initHomeJourney(canvas) {
     placeCamera(Math.min(1, Math.max(0, eased)), t);
 
     const glowPulse = 0.82 + Math.sin(t * 0.028) * 0.18;
-    destGlow.scale.setScalar(4.4 * glowPulse);
-    destLight.intensity = 30 * glowPulse;
+    destGlow.scale.setScalar(7.0 * glowPulse);
+    destLight.intensity = 46 * glowPulse;
 
     const tt = (t * 0.0011) % 1;
     ship.position.copy(path.getPointAt(tt)).add(HOVER);

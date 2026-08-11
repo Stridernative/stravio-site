@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contact — Stravio</title>
-  <meta name="description" content="Start the conversation with Stravio. One short call to confirm fit and scope. No prep needed.">
+  <title>Contact · Stravio</title>
+  <meta name="description" content="Start the conversation with Stravio. One short conversation to unlock your path forward. No prep needed.">
   <meta name="theme-color" content="#11192A">
   <link rel="canonical" href="https://stravioai.com/contact.html">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' rx='6' fill='%2311192A'/%3E%3Cpolyline points='4,25 9,19 13,21 17,12 21,14 26,6' stroke='%23F2EFE7' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='26' cy='6' r='3' fill='%23C9853A'/%3E%3C/svg%3E">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Contact — Stravio">
-  <meta property="og:description" content="One short conversation to confirm fit and scope.">
+  <meta property="og:title" content="Contact · Stravio">
+  <meta property="og:description" content="One short conversation to unlock your path forward.">
   <meta property="og:url" content="https://stravioai.com/contact.html">
   <link rel="stylesheet" href="assets/css/site.css">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
 </head>
-<body>
+<body class="journey">
 
 <header class="nav">
   <div class="wrap nav-inner">
@@ -24,38 +24,36 @@
       <span class="wordmark"><b>str</b><span>avio</span></span>
     </a>
     <nav class="nav-links" aria-label="Main">
+      <a class="nlink" href="index.html">Home</a>
       <a class="nlink" href="services.html">Services</a>
       <a class="nlink" href="about.html">About</a>
       <a class="nlink" href="contact.html" aria-current="page">Contact</a>
-      <a class="nav-cta" href="contact.html">Get in touch</a>
     </nav>
   </div>
 </header>
 
+<div class="journey-bg"><canvas id="arrivalCanvas" aria-hidden="true"></canvas></div>
+
 <main>
 
-  <!-- ARRIVAL -->
-  <section class="contact-hero" aria-label="Contact">
-    <div class="scene"><canvas id="arrivalCanvas" aria-hidden="true"></canvas></div>
-    <div class="hero-content">
-      <div class="wrap">
-        <div class="contact-grid">
-          <div>
-            <p class="eyebrow">You made it to the dot</p>
-            <h1 style="font-size:clamp(38px,4.8vw,62px)">Let's talk.</h1>
-            <p class="lead" style="margin-top:20px">Every path on this site ends here, and so does every path we build. One short conversation to confirm fit and scope. No prep needed, no pitch deck coming back at you.</p>
-            <p class="lead" style="margin-top:24px; font-size:16px">Prefer email?&nbsp;
-              <a class="textlink" href="mailto:gabe@stravioai.com">gabe@stravioai.com <span class="arw">&rarr;</span></a>
-            </p>
-            <p class="lead" style="margin-top:14px; font-size:16px">Tell us what you are working on and we will come back to you within one business day.</p>
-          </div>
-          <form class="lead-form panel" id="leadForm" style="padding:34px">
+  <!-- ARRIVAL — one still frame: copy left, form right, the road weaves between -->
+  <section class="stop contact-single" id="message" aria-label="Contact Stravio">
+    <div class="wrap">
+      <div class="contact-row">
+        <div class="stop-inner contact-copy">
+          <p class="eyebrow" data-reveal>Your path forward starts here</p>
+          <h1 data-reveal style="font-size:clamp(38px,4.8vw,62px)">Let's talk</h1>
+          <p class="lead" data-reveal>Curiosity is reason enough to reach out. A call costs nothing and there's no prep needed. Tell us what you're working on and we'll find time to talk.</p>
+        </div>
+        <div class="stop-inner contact-form-col">
+          <form class="lead-form" id="leadForm" data-reveal>
             <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" autocomplete="name" required></div>
             <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" required></div>
-            <div class="field"><label for="f-co">Company</label><input id="f-co" type="text" autocomplete="organization"></div>
+            <div class="field"><label for="f-co">Company</label><input id="f-co" type="text" autocomplete="organization" required></div>
             <div class="field"><label for="f-msg">What you're working on</label><textarea id="f-msg" required></textarea></div>
+            <input id="f-check" type="checkbox" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
             <button class="btn btn-primary" type="submit" style="align-self:flex-start"><span class="mark"></span>Send</button>
-            <p class="form-note">This opens a draft to gabe@stravioai.com in your mail app. Nothing is stored on this site.</p>
+            <p class="form-note" aria-live="polite"></p>
           </form>
         </div>
       </div>
@@ -74,22 +72,24 @@
       <p class="tag">Strategic path forward.</p>
     </div>
     <div>
-      <h5>Explore</h5>
+      <p class="foot-h">Explore</p>
+      <a href="index.html">Home</a>
       <a href="services.html">Services</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
     </div>
     <div>
-      <h5>Reach us</h5>
-      <a href="mailto:gabe@stravioai.com">gabe@stravioai.com</a>
+      <p class="foot-h">Reach us</p>
+      <a href="#message">Send a message</a>
     </div>
   </div>
-  <div class="wrap"><p class="copy">&copy; <span data-year>2026</span> Stravio. Strategic path forward.</p></div>
+  <div class="wrap"><p class="copy">&copy; <span data-year>2026</span> Stravio, LLC. Strategic path forward.</p></div>
 </footer>
 
 <script type="module">
   import { bindLeadForm } from './assets/js/site.js';
   import { initArrival } from './assets/js/scenes.js';
+
   initArrival(document.getElementById('arrivalCanvas'));
   bindLeadForm(document.getElementById('leadForm'));
 </script>

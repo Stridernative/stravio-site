@@ -48,17 +48,51 @@ export function bindStory(sectionEl, segments, onUpdate) {
   };
 }
 
-// contact form: no backend yet — compose a mail draft to gabe@stravioai.com
+// contact form: relay through Web3Forms straight to the Stravio inbox —
+// no mail app, nothing stored on this site. Mailto is only the failure fallback.
+const WEB3FORMS_KEY = 'f3a88514-18d5-417f-9c09-a1eb65e447f5'; // from web3forms.com, tied to gabe@stravioai.com
 export function bindLeadForm(form) {
   if (!form) return;
-  form.addEventListener('submit', (e) => {
+  const btn = form.querySelector('button[type="submit"]');
+  if (!btn) return;
+  const note = form.querySelector('.form-note');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const v = (id) => (form.querySelector(id) ? form.querySelector(id).value.trim() : '');
-    const subject = encodeURIComponent('Stravio inquiry — ' + (v('#f-co') || v('#f-name')));
-    const body = encodeURIComponent(
-      'Name: ' + v('#f-name') + '\nCompany: ' + v('#f-co') + '\nEmail: ' + v('#f-email') +
-      '\n\nWhat we are working on:\n' + v('#f-msg')
-    );
-    window.location.href = 'mailto:gabe@stravioai.com?subject=' + subject + '&body=' + body;
+    const payload = {
+      access_key: WEB3FORMS_KEY,
+      subject: 'Stravio site inquiry from ' + v('#f-name') + (v('#f-co') ? ' at ' + v('#f-co') : ''),
+      from_name: 'stravioai.com contact form',
+      name: v('#f-name'),
+      email: v('#f-email'),
+      company: v('#f-co'),
+      message: v('#f-msg'),
+    };
+    const hp = form.querySelector('#f-check');
+    if (hp && hp.checked) return; // honeypot tripped: drop silently
+    btn.disabled = true;
+    const label = btn.innerHTML;
+    btn.innerHTML = '<span class="mark"></span>Sending&hellip;';
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'send failed');
+      form.innerHTML =
+        '<div class="form-sent"><p class="sent-title">Message sent</p>' +
+        '<p class="sent-body">We will come back to you within one business day.</p></div>';
+    } catch (err) {
+      console.error('Contact form send failed:', err);
+      btn.disabled = false;
+      btn.innerHTML = label;
+      if (note) {
+        note.classList.add('form-err');
+        note.innerHTML = 'Something interrupted the send. Try again, or email ' +
+          '<a href="mailto:gabe@stravioai.com">gabe@stravioai.com</a> directly.';
+      }
+    }
   });
 }

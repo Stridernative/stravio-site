@@ -300,13 +300,54 @@ export function initStack(canvas, { onPick } = {}) {
   scene.add(warm);
 
   const mid = topY / 2;
-  camera.position.set(4.6, mid + 2.6, 6.2);
-  camera.lookAt(0, mid, 0);
+
+  // framing: the whole stack, through its full sway, must stay inside the canvas —
+  // never crop the base corners (the "window" effect). Distance is computed from the
+  // live canvas aspect so every viewport fits, and recomputed on resize.
+  const LOOK = new THREE.Vector3(0, mid, 0);
+  const VIEW_DIR = new THREE.Vector3(6.3, 3.5, 9.2).normalize();
+  const SWAY_AMP = 0.24, SWAY_OFF = -0.12;
+  const FIT_MARGIN = 0.92;
+  const viewBasis = new THREE.Matrix4().lookAt(VIEW_DIR, new THREE.Vector3(0, 0, 0), camera.up);
+  const rHat = new THREE.Vector3().setFromMatrixColumn(viewBasis, 0);
+  const uHat = new THREE.Vector3().setFromMatrixColumn(viewBasis, 1);
+  const fHat = new THREE.Vector3().setFromMatrixColumn(viewBasis, 2).negate();
+
+  function fitCamera() {
+    const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * FIT_MARGIN;
+    const th = tv * camera.aspect;
+    const e = new THREE.Vector3();
+    let d = 4;
+    const consider = (x, y, z, pad) => {
+      e.set(x, y - LOOK.y, z);
+      const ex = Math.abs(e.dot(rHat)) + pad;
+      const ey = Math.abs(e.dot(uHat)) + pad;
+      const ez = e.dot(fHat);
+      d = Math.max(d, ex / th - ez, ey / tv - ez);
+    };
+    for (let s = 0; s <= 12; s++) {
+      const a = (SWAY_OFF - SWAY_AMP) + (s / 12) * SWAY_AMP * 2;
+      const c = Math.cos(a), n = Math.sin(a);
+      tiers.forEach((tier, i) => {
+        const h = 0.95 + i * 0.42;
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+          const x = sx * h * c - sz * h * n;
+          const z = sx * h * n + sz * h * c;
+          consider(x, tier.baseY - H / 2, z, 0);
+          consider(x, tier.baseY + H / 2, z, 0);
+        }
+      });
+    }
+    consider(0, topY + 0.9, 0, 0.8); // apex dot + glow halo
+    camera.position.copy(LOOK).addScaledVector(VIEW_DIR, d);
+    camera.lookAt(LOOK);
+  }
+  fitCamera();
 
   let active = 0;
   const BRASS = new THREE.Color(BRAND.brass);
   const DONE = new THREE.Color(0x7a5527);
-  const TODO = new THREE.Color(BRAND.steelDeep);
+  const INACTIVE = new THREE.Color(BRAND.steelDeep);
 
   function paint() {
     tiers.forEach(({ mat, edges }, i) => {
@@ -317,7 +358,7 @@ export function initStack(canvas, { onPick } = {}) {
         mat.color.copy(DONE); mat.emissive.setHex(0x1e1305);
         edges.material.opacity = 0.2;
       } else {
-        mat.color.copy(TODO); mat.emissive.setHex(0x000000);
+        mat.color.copy(INACTIVE); mat.emissive.setHex(0x000000);
         edges.material.opacity = 0.14;
       }
     });
@@ -342,8 +383,10 @@ export function initStack(canvas, { onPick } = {}) {
     if (hit && onPick) onPick(hit.object.userData.index);
   });
 
+  let lastAspect = camera.aspect;
   stage.frame = (t) => {
-    group.rotation.y = Math.sin(t * 0.0032) * 0.3 - 0.15;
+    if (camera.aspect !== lastAspect) { lastAspect = camera.aspect; fitCamera(); }
+    group.rotation.y = Math.sin(t * 0.0032) * SWAY_AMP + SWAY_OFF;
     tiers.forEach((tier, i) => {
       const bob = i === active && !reduceMotion ? Math.sin(t * 0.045) * 0.045 : 0;
       tier.mesh.position.y = tier.baseY + bob;
@@ -477,45 +520,150 @@ export function initJourney(canvas, waypointTs = [0.06, 0.37, 0.66, 0.95]) {
 }
 
 /* ============================================================
-   4 · ARRIVAL — contact · the destination dot, up close
-   The journey across the site ends at the dot in the mark.
+   4 · ARRIVAL — contact · the last leg of the journey
+   One fixed scene behind the whole page: the brass path sweeps
+   in from deep space past the planets; scrolling travels the
+   final stretch and lands at the dot, where the form waits.
+   Composition rule (D19): beat 1 the path owns the center-right
+   while copy pins left; beat 2 the dot lands left while the
+   form owns the right. The road never sits behind copy.
    ============================================================ */
 export function initArrival(canvas) {
-  const stage = createStage(canvas, { fov: 42, fog: 0.05 });
+  const stage = createStage(canvas, { fov: 46, fog: 0.045 });
   const { scene, camera } = stage;
 
-  // where the journey ends: low center, out of the copy's way
-  const DOT = new THREE.Vector3(0.15, -1.05, 0);
+  // arrival is one still frame: copy owns the left column, the form owns the
+  // right, and the road weaves the center band — passing LEFT of the system,
+  // never through a planet — down to the dot at lower center.
+  const DOT = new THREE.Vector3(-0.5, -1.0, 0.8);
 
-  // the last stretch of road, arriving from the lower left
+  // the last leg, weaving in from deep space — enters LEFT of the system
   const approach = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-6.5, -3.4, 2.0),
-    new THREE.Vector3(-3.6, -2.4, 0.8),
-    new THREE.Vector3(-4.0, -1.7, -0.2),
-    new THREE.Vector3(-1.7, -1.35, 0.1),
+    new THREE.Vector3(-1.4, 2.7, -15.5),
+    new THREE.Vector3(-2.4, 1.9, -11),
+    new THREE.Vector3(0.4, 1.2, -7),
+    new THREE.Vector3(-1.6, 0.3, -3.5),
+    new THREE.Vector3(-0.5, -0.5, -0.8),
     DOT.clone(),
   ]);
-  const road = new THREE.Mesh(
-    new THREE.TubeGeometry(approach, 160, 0.035, 8, false),
-    new THREE.MeshStandardMaterial({ color: BRAND.brass, metalness: 0.7, roughness: 0.35, emissive: 0x3a250b })
-  );
-  scene.add(road);
 
-  // the dot
-  const dot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.2, 40, 40),
-    new THREE.MeshStandardMaterial({ color: BRAND.brass, metalness: 0.5, roughness: 0.35, emissive: 0x5a3a12, emissiveIntensity: 1 })
+  // flat track, same build as the homepage road (deck + edge rails, D17 —
+  // a ridable road, never a tube)
+  const TRACK_W = 0.46;
+  const UP = new THREE.Vector3(0, 1, 0);
+  function buildTrack(curve, segments, width) {
+    const pos = [], norm = [], uvs = [], idx = [];
+    const leftPts = [], rightPts = [];
+    const side = new THREE.Vector3();
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const p = curve.getPointAt(t);
+      side.crossVectors(UP, curve.getTangentAt(t)).normalize();
+      const l = p.clone().addScaledVector(side, width / 2);
+      const r = p.clone().addScaledVector(side, -width / 2);
+      leftPts.push(l); rightPts.push(r);
+      pos.push(l.x, l.y, l.z, r.x, r.y, r.z);
+      norm.push(0, 1, 0, 0, 1, 0);
+      uvs.push(0, t, 1, t);
+    }
+    for (let i = 0; i < segments; i++) {
+      const a = i * 2;
+      idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(norm, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.setIndex(idx);
+    return { geo, leftPts, rightPts };
+  }
+  const track = buildTrack(approach, 320, TRACK_W);
+  scene.add(new THREE.Mesh(
+    track.geo,
+    new THREE.MeshStandardMaterial({
+      color: BRAND.brass, metalness: 0.6, roughness: 0.42,
+      emissive: 0x2e1c07, emissiveIntensity: 1, side: THREE.DoubleSide,
+    })
+  ));
+  const railMat = new THREE.MeshStandardMaterial({
+    color: BRAND.brassBright, metalness: 0.75, roughness: 0.3,
+    emissive: 0x4a2f0e, emissiveIntensity: 1,
+  });
+  const every8 = (pts) => pts.filter((_, i) => i % 8 === 0);
+  for (const edge of [track.leftPts, track.rightPts]) {
+    const railPts = every8(edge);
+    scene.add(new THREE.Mesh(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPts), 240, 0.02, 8, false),
+      railMat
+    ));
+    // cap the tubes: open mouths read as dark see-through arches at the ends.
+    // Caps stay flush with the rail radius and wear the DECK's brass, so the
+    // tips sit in the same color register as the rest of the track.
+    const capMat = new THREE.MeshStandardMaterial({
+      color: BRAND.brass, metalness: 0.6, roughness: 0.42,
+      emissive: 0x2e1c07, emissiveIntensity: 1,
+    });
+    for (const end of [railPts[0], railPts[railPts.length - 1]]) {
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.02, 10, 10), capMat);
+      cap.position.copy(end);
+      scene.add(cap);
+    }
+  }
+  // soft spill of light across the terminus — the deck edge and rail ends
+  // melt into the glow instead of finishing on a hard rim
+  const spill = glowSprite('rgba(250,236,210,0.6)', 'rgba(242,210,160,0.22)', 0.52);
+  spill.position.copy(DOT).add(new THREE.Vector3(0, 0.02, 0.18));
+  scene.add(spill);
+  const guidePts = approach.getPoints(320).map((p) => p.clone().add(new THREE.Vector3(0, 0.03, 0)));
+  const guide = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(guidePts),
+    new THREE.LineBasicMaterial({
+      color: BRAND.brassBright, transparent: true, opacity: 0.4,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    })
   );
-  dot.position.copy(DOT);
-  scene.add(dot);
-  const halo = glowSprite('rgba(247,231,196,0.75)', 'rgba(201,133,58,0.22)', 2.1);
-  halo.position.copy(DOT);
+  scene.add(guide);
+
+  // the destination — pure light, same treatment as the homepage (no solid ball, D20).
+  // It sits just BELOW and beyond the track's end, never on top of it: centering it
+  // on the end cap silhouettes the deck inside the glow and reads as a tunnel mouth.
+  const GLOW = new THREE.Vector3(-0.51, -1.08, 0.92);
+  const destHot = glowSprite('rgba(255,248,232,0.95)', 'rgba(247,231,196,0.5)', 1.6);
+  destHot.position.copy(GLOW);
+  scene.add(destHot);
+  const halo = glowSprite('rgba(247,231,196,0.75)', 'rgba(201,133,58,0.3)', 3.9);
+  halo.position.copy(GLOW);
   scene.add(halo);
-  const light = new THREE.PointLight(BRAND.brassBright, 24, 18, 2);
-  light.position.copy(DOT).add(new THREE.Vector3(0.9, 0.9, 1.4));
+  const light = new THREE.PointLight(BRAND.brassBright, 40, 40, 1.6);
+  light.position.copy(GLOW).add(new THREE.Vector3(0.5, 0.7, 1.0));
   scene.add(light);
 
-  // slow orbit of pearl particles — everything gathers here
+  // the system you navigate on the way in
+  function planet(r, x, y, z, ringed) {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(
+      new THREE.SphereGeometry(r, 36, 36),
+      new THREE.MeshStandardMaterial({ color: BRAND.steelDeep, metalness: 0.35, roughness: 0.7, emissive: 0x0a1120, emissiveIntensity: 0.7 })
+    ));
+    if (ringed) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(r * 1.45, r * 2.0, 64),
+        new THREE.MeshBasicMaterial({ color: BRAND.brass, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+      );
+      ring.rotation.x = Math.PI / 2.4;
+      g.add(ring);
+    }
+    g.position.set(x, y, z);
+    scene.add(g);
+    return g;
+  }
+  const planets = [
+    planet(1.15, 4.2, 1.9, -15.5, true),  // the ringed one — clear sky between ring and road
+    planet(0.5, 1.9, -0.8, -6.2, false),
+    planet(0.9, -4.8, 2.9, -13, false),   // upper left, above the copy column
+  ];
+
+  // slow orbit of pearl particles — everything gathers at the destination
   const ORBIT = 420;
   const opos = new Float32Array(ORBIT * 3);
   for (let i = 0; i < ORBIT; i++) {
@@ -531,35 +679,61 @@ export function initArrival(canvas) {
     color: BRAND.pearl, size: 0.02, transparent: true, opacity: 0.45, depthWrite: false,
   }));
   orbit.rotation.x = 0.28;
-  orbit.position.copy(DOT);
+  orbit.position.copy(GLOW);
   scene.add(orbit);
 
-  // last pulse traveling in along the approach road
-  const pulse = new THREE.Mesh(
-    new THREE.SphereGeometry(0.04, 10, 10),
-    new THREE.MeshBasicMaterial({ color: BRAND.pearl })
+  // the ship, flying the last leg home — same craft as the homepage
+  const ship = new THREE.Group();
+  const shipBody = new THREE.Mesh(
+    new THREE.ConeGeometry(0.05, 0.22, 12),
+    new THREE.MeshStandardMaterial({
+      color: BRAND.pearl, metalness: 0.35, roughness: 0.3,
+      emissive: 0xd8d0c0, emissiveIntensity: 0.85,
+    })
   );
-  scene.add(pulse);
+  shipBody.geometry.rotateX(Math.PI / 2);
+  ship.add(shipBody);
+  ship.add(glowSprite('rgba(242,239,231,0.8)', 'rgba(242,239,231,0.12)', 0.7));
+  ship.add(new THREE.PointLight(BRAND.pearl, 2.5, 3, 2));
+  scene.add(ship);
+  const HOVER = new THREE.Vector3(0, 0.09, 0);
+  const shipAhead = new THREE.Vector3();
 
-  scene.add(new THREE.AmbientLight(BRAND.steel, 1.0));
+  // deep space
+  scene.add(dustField(520, [34, 18, 30], 0.02, 0.4));
+  scene.add(dustField(80, [28, 16, 24], 0.05, 0.75));
+  scene.add(new THREE.AmbientLight(BRAND.steel, 1.05));
+  const key = new THREE.DirectionalLight(0x8fa2c0, 1.1);
+  key.position.set(-4, 6, 5);
+  scene.add(key);
 
-  camera.position.set(0.3, 0.2, 6.0);
+  // one still frame: gentle drift and pointer parallax only — no scroll travel
   const pointer = pointerParallax(canvas.parentElement || canvas);
+  const BASE = new THREE.Vector3(0, 0.55, 6.2);
+  const LOOK = new THREE.Vector3(0.15, 0.35, -3);
 
   stage.frame = (t) => {
-    const breathe = 0.85 + Math.sin(t * 0.022) * 0.15;
-    halo.scale.setScalar(2.1 * breathe);
-    light.intensity = 24 * breathe;
-    dot.rotation.y = t * 0.002;
-    orbit.rotation.y = t * 0.0011;
-
-    const tt = (t * 0.0022) % 1;
-    pulse.position.copy(approach.getPointAt(tt));
-
     const p = pointer();
-    camera.position.x = 0.3 + p.x * 0.3;
-    camera.position.y = 0.2 - p.y * 0.2;
-    camera.lookAt(0.15, -0.35, 0);
+    camera.position.set(
+      BASE.x + p.x * 0.28 + Math.sin(t * 0.0032) * 0.08,
+      BASE.y - p.y * 0.2 + Math.cos(t * 0.0026) * 0.05,
+      BASE.z
+    );
+    camera.lookAt(LOOK);
+
+    const breathe = 0.85 + Math.sin(t * 0.022) * 0.15;
+    halo.scale.setScalar(3.9 * breathe);
+    destHot.scale.setScalar(1.6 * (0.92 + Math.sin(t * 0.028) * 0.08));
+    light.intensity = 36 * breathe;
+    orbit.rotation.y = t * 0.0011;
+    planets[0].rotation.y = t * 0.0009;
+    planets[1].rotation.y = -t * 0.0013;
+    planets[2].rotation.y = t * 0.0007;
+
+    const tt = (t * 0.0013) % 1;
+    ship.position.copy(approach.getPointAt(tt)).add(HOVER);
+    approach.getPointAt(Math.min(1, tt + 0.008), shipAhead).add(HOVER);
+    ship.lookAt(shipAhead);
   };
   stage.start();
 }
