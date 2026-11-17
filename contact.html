@@ -12,6 +12,7 @@
   <meta property="og:title" content="Contact · Stravio">
   <meta property="og:description" content="One short conversation to unlock your path forward.">
   <meta property="og:url" content="https://stravioai.com/contact.html">
+  <meta property="og:image" content="https://stravioai.com/stravio-banner.png">
   <link rel="stylesheet" href="assets/css/site.css">
   <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
 </head>
@@ -44,6 +45,11 @@
           <p class="eyebrow" data-reveal>Your path forward starts here</p>
           <h1 data-reveal style="font-size:clamp(38px,4.8vw,62px)">Let's talk</h1>
           <p class="lead" data-reveal>Curiosity is reason enough to reach out. A call costs nothing and there's no prep needed. Tell us what you're working on and we'll find time to talk.</p>
+          <ol class="next-steps" role="list" data-reveal aria-label="What happens next">
+            <li><span class="kicker-num">01</span><span>You send a short note about what you're working on.</span></li>
+            <li><span class="kicker-num">02</span><span>We reply within one business day to find a time.</span></li>
+            <li><span class="kicker-num">03</span><span>We talk for thirty minutes, and that call is free.</span></li>
+          </ol>
         </div>
         <div class="stop-inner contact-form-col">
           <form class="lead-form" id="leadForm" data-reveal>
@@ -52,9 +58,15 @@
             <div class="field"><label for="f-co">Company</label><input id="f-co" type="text" autocomplete="organization" required></div>
             <div class="field"><label for="f-msg">What you're working on</label><textarea id="f-msg" required></textarea></div>
             <input id="f-check" type="checkbox" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
-            <button class="btn btn-primary" type="submit" style="align-self:flex-start"><span class="mark"></span>Send</button>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit"><span class="mark"></span>Send message</button>
+              <p class="form-fine">We use these details only to reply and set up a call. <a href="privacy.html">Privacy policy</a></p>
+            </div>
             <p class="form-note" aria-live="polite"></p>
           </form>
+          <!-- persistent status region: the sent confirmation renders here so
+               screen readers announce it and focus has somewhere to land -->
+          <div id="formStatus" role="status" tabindex="-1"></div>
         </div>
       </div>
     </div>
@@ -71,19 +83,22 @@
       </a>
       <p class="tag">Strategic path forward.</p>
     </div>
-    <div>
+    <nav aria-label="Explore">
       <p class="foot-h">Explore</p>
       <a href="index.html">Home</a>
       <a href="services.html">Services</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
-    </div>
-    <div>
+    </nav>
+    <nav aria-label="Reach us">
       <p class="foot-h">Reach us</p>
-      <a href="#message">Send a message</a>
-    </div>
+      <a href="contact.html">Send a message</a>
+    </nav>
   </div>
-  <div class="wrap"><p class="copy">&copy; <span data-year>2026</span> Stravio, LLC. Strategic path forward.</p></div>
+  <div class="wrap foot-base">
+    <p class="copy">&copy; <span data-year>2026</span> Stravio, LLC. Strategic path forward.</p>
+    <a href="privacy.html">Privacy policy</a>
+  </div>
 </footer>
 
 <script type="module">

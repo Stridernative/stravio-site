@@ -44,6 +44,23 @@ function glowSprite(inner, outer, scale) {
   return s;
 }
 
+/* round star sprite: without a map, points draw as hard squares */
+let dotTex = null;
+function dotTexture() {
+  if (dotTex) return dotTex;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 32;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.5, 'rgba(255,255,255,1)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 32, 32);
+  dotTex = new THREE.CanvasTexture(cv);
+  return dotTex;
+}
+
 /* star layer: `count` points in a box `spread` around `center` */
 function starField(count, spread, center, size, opacity) {
   const pos = new Float32Array(count * 3);
@@ -55,7 +72,7 @@ function starField(count, spread, center, size, opacity) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   return new THREE.Points(geo, new THREE.PointsMaterial({
-    color: BRAND.pearl, size, transparent: true, opacity,
+    color: BRAND.pearl, size, transparent: true, opacity, map: dotTexture(),
     depthWrite: false, sizeAttenuation: true,
   }));
 }

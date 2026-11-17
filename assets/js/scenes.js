@@ -106,6 +106,23 @@ function glowSprite(inner, outer, scale) {
   return s;
 }
 
+/* round star sprite: without a map, points draw as hard squares */
+let dotTex = null;
+function dotTexture() {
+  if (dotTex) return dotTex;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 32;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.5, 'rgba(255,255,255,1)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 32, 32);
+  dotTex = new THREE.CanvasTexture(cv);
+  return dotTex;
+}
+
 /* drifting dust field */
 function dustField(count, spread, size = 0.02, opacity = 0.35) {
   const pos = new Float32Array(count * 3);
@@ -117,7 +134,7 @@ function dustField(count, spread, size = 0.02, opacity = 0.35) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
-    color: BRAND.pearl, size, transparent: true, opacity,
+    color: BRAND.pearl, size, transparent: true, opacity, map: dotTexture(),
     depthWrite: false, sizeAttenuation: true,
   });
   return new THREE.Points(geo, mat);
@@ -676,7 +693,7 @@ export function initArrival(canvas) {
   const orbitGeo = new THREE.BufferGeometry();
   orbitGeo.setAttribute('position', new THREE.BufferAttribute(opos, 3));
   const orbit = new THREE.Points(orbitGeo, new THREE.PointsMaterial({
-    color: BRAND.pearl, size: 0.02, transparent: true, opacity: 0.45, depthWrite: false,
+    color: BRAND.pearl, size: 0.02, transparent: true, opacity: 0.45, depthWrite: false, map: dotTexture(),
   }));
   orbit.rotation.x = 0.28;
   orbit.position.copy(GLOW);

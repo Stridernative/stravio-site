@@ -81,9 +81,18 @@ export function bindLeadForm(form) {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'send failed');
-      form.innerHTML =
+      const sent =
         '<div class="form-sent"><p class="sent-title">Message sent</p>' +
         '<p class="sent-body">We will come back to you within one business day.</p></div>';
+      const status = document.getElementById('formStatus');
+      if (status) {
+        // keep the form in the DOM but out of the way; announce in the live region
+        form.hidden = true;
+        status.innerHTML = sent;
+        status.focus();
+      } else {
+        form.innerHTML = sent;
+      }
     } catch (err) {
       console.error('Contact form send failed:', err);
       btn.disabled = false;
